@@ -1,16 +1,73 @@
-import { IUser } from "./user.interface";
+import AppError from "../../errorHelpers/AppError";
+import { IAuthProvider, IUser, Role } from "./user.interface";
 import { Users } from "./user.model";
+import httpStatus from "http-status-codes";
+import bcryptjs from "bcryptjs";
+import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
+
 
 const createUserService = async (payload: Partial<IUser>) => {
-    const { name, email } = payload;
+    const { email, password, ...rest } = payload;
 
-    const user = await Users.create({
-        name,
-        email
+    const user = await Users.findOne({email});
+
+    if (user) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User Already Exists!");
+    };
+
+    const hashedPassword = await bcryptjs.hash(password as string, Number(envVars.SALT))
+
+    const authProvider: IAuthProvider = {provider: "credentials", providerId: email as string};
+
+    const newUser = await Users.create({
+        email,
+        password: hashedPassword,
+        auths: [authProvider],
+        ...rest
     });
 
-    return user;
+    return newUser;
 };
+
+const updateUserService = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
+    /**
+     * email - cannot be updated -> already taken care of using zod schema
+     * name, phone, address, password
+     * password re-hashing
+     * Only ADMIN & SUPER_ADMIN can update -> role, isDeleted, isActive: BLOCKED
+     * Only SUPER_ADMIN can promote someone to SUPER_ADMIN
+     */
+
+    const user = await Users.findById(userId);
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User Not Found!");
+    };
+
+    if (payload.role) {
+        if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized to update role!");
+        };
+
+        if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
+            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized to promote to SUPER_ADMIN!");
+        };
+    };
+
+    if (payload.isActive || payload.isDeleted || payload.isVerified) {
+        if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized to update this property(s)!");
+        };
+    };
+
+    if (payload.password) {
+        payload.password = await bcryptjs.hash(payload.password, Number(envVars.SALT));
+    };
+
+    const updatedUser = await Users.findByIdAndUpdate(userId, payload, {new: true, runValidators: true});
+
+    return updatedUser;
+}
 
 const getAllUsersService = async () => {
     const users = await Users.find();
@@ -27,5 +84,6 @@ const getAllUsersService = async () => {
 
 export const UserServices = {
     createUserService,
+    updateUserService,
     getAllUsersService
 };
