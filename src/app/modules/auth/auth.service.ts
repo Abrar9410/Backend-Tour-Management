@@ -3,8 +3,7 @@ import AppError from "../../errorHelpers/AppError";
 import { IUser } from "../user/user.interface";
 import httpStatus from "http-status-codes";
 import bcryptjs from "bcryptjs";
-import { generateToken } from "../../utils/jwt";
-import { envVars } from "../../config/env";
+import { createNewTokenWithRefreshToken, createUserTokens } from "../../utils/userTokens";
 
 
 const credentialsLoginService = async (payload: Partial<IUser>) => {
@@ -22,15 +21,28 @@ const credentialsLoginService = async (payload: Partial<IUser>) => {
         throw new AppError(httpStatus.BAD_REQUEST, "Incorrect Password!")
     };
 
-    const jwtPayload = {userId: user._id, email: user.email, role: user.role};
+    const { token, refreshToken } = createUserTokens(user);
 
-    const token = generateToken(jwtPayload, envVars.JWT_SECRET, envVars.JWT_EXPIRESIN);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const {password: pass,...rest} = user.toObject();
 
     return {
-        token
+        token,
+        refreshToken,
+        user: rest
+    };
+};
+
+const getNewTokenService = async (refreshToken: string) => {
+    
+    const newToken = await createNewTokenWithRefreshToken(refreshToken);
+
+    return {
+        token: newToken
     };
 };
 
 export const AuthServices = {
-    credentialsLoginService
+    credentialsLoginService,
+    getNewTokenService,
 };
