@@ -6,6 +6,9 @@ import httpStatus from "http-status-codes";
 import { AuthServices } from "./auth.service";
 import AppError from "../../errorHelpers/AppError";
 import { setAuthCookie } from "../../utils/setCookie";
+import { createUserTokens } from "../../utils/userTokens";
+import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
 
 
 const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -68,7 +71,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response, next: NextF
     const oldPassword = req.body.oldPassword;
     const newPassword = req.body.newPassword;
 
-    await AuthServices.resetPasswordService(decodedToken, oldPassword, newPassword); 
+    await AuthServices.resetPasswordService(decodedToken as JwtPayload, oldPassword, newPassword); 
 
     sendResponse(res, {
         success: true,
@@ -78,9 +81,29 @@ const resetPassword = catchAsync(async (req: Request, res: Response, next: NextF
     });
 });
 
+const googleCallback = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const user = req.user;
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User Not Found!")
+    };
+
+    let redirectTo = req.query.state ? req.query.state as string: "";
+    if (redirectTo.startsWith("/")) {
+        redirectTo = redirectTo.slice(1);
+    };
+
+    const tokenInfo = createUserTokens(user);
+
+    setAuthCookie(res, tokenInfo);
+
+    res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
+});
+
 export const AuthControllers = {
     credentialsLogin,
     getNewToken,
     logout,
-    resetPassword
+    resetPassword,
+    googleCallback
 };
