@@ -18,11 +18,11 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
     passport.authenticate("local", async (err: any, user: any, info: any) => {
 
         if (err) {
-            return next(new AppError(401, err));   // Can't use new AppError() because this is in passport scope
+            return next(new AppError(httpStatus.BAD_REQUEST, err));   // Can't use new AppError() because this is in passport scope
         };
 
         if (!user) {
-            return next(new AppError(401, info.message)); 
+            return next(new AppError(httpStatus.NOT_FOUND, info.message)); 
         };
 
         const userTokens = createUserTokens(user);
