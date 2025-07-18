@@ -15,7 +15,15 @@ const credentialsLoginService = async (payload: Partial<IUser>) => {
     const user = await Users.findOne({ email });
 
     if (!user) {
-        throw new AppError(httpStatus.BAD_REQUEST, "User Does Not Exist!");
+        throw new AppError(httpStatus.NOT_FOUND, "User Does Not Exist!");
+    };
+
+    const isGoogleAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "google");
+    if (isGoogleAuthenticated) {
+        throw new AppError(
+            httpStatus.CONFLICT,
+            "You have authenticated with Google previously! If you want to enable Credentials login, first login with Google with this gmail and set a password for your account."
+        );
     };
 
     const isPasswordMatched = await bcryptjs.compare(password as string, user.password as string);
@@ -49,14 +57,28 @@ const resetPasswordService = async (decodedToken: JwtPayload, oldPassword: strin
     
     const user = await Users.findById(decodedToken.userId);
 
-    if (user!._id !== decodedToken.userId) {
+    if (user?._id.toString() !== decodedToken.userId) {     //** Not Working Without .toString() */
         throw new AppError(httpStatus.FORBIDDEN, "You are Trying to Change Another User's Password!");
     };
 
-    const isOldPasswordMatched = await bcryptjs.compare(oldPassword, user!.password as string);
+    if (user!.password) {
+        const isOldPasswordMatched = await bcryptjs.compare(oldPassword, user!.password as string);
 
-    if (!isOldPasswordMatched) {
-        throw new AppError(httpStatus.UNAUTHORIZED, "Old Password Does Not Match!");
+        if (!isOldPasswordMatched) {
+            throw new AppError(httpStatus.UNAUTHORIZED, "Old Password Does Not Match!");
+        };
+    };
+
+    if (newPassword.length < 8) {
+        throw new AppError(httpStatus.LENGTH_REQUIRED, "Password must be at least 8 characters long.")
+    };
+
+    const oneUppercaseLetter = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*\d)/;
+    if (!oneUppercaseLetter.test(newPassword)) {
+        throw new AppError(
+            httpStatus.NOT_ACCEPTABLE,
+            "Password must contain at least one Uppercase letter, at least one Special Character and at least one Number!"
+        );
     };
 
     user!.password = await bcryptjs.hash(newPassword, Number(envVars.SALT));
