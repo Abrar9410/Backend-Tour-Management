@@ -37,6 +37,13 @@ passport.use(
                             }
                         ]
                     });
+                } else {
+                    const isLocalAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "credentials");
+                    const isGoogleAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "google");
+                    if (isLocalAuthenticated && !isGoogleAuthenticated) {
+                        user.auths.push({provider: "google", providerId: profile.id});
+                        await user.save();
+                    };
                 };
 
                 return done(null, user);
