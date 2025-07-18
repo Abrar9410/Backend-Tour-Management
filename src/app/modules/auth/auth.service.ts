@@ -19,7 +19,7 @@ const credentialsLoginService = async (payload: Partial<IUser>) => {
     };
 
     const isGoogleAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "google");
-    if (isGoogleAuthenticated) {
+    if (isGoogleAuthenticated && !user.password) {
         throw new AppError(
             httpStatus.CONFLICT,
             "You have authenticated with Google previously! If you want to enable Credentials login, first login with Google with this gmail and set a password for your account."
