@@ -15,7 +15,7 @@ const credentialsLoginService = async (payload: Partial<IUser>) => {
     const user = await Users.findOne({ email });
 
     if (!user) {
-        throw new AppError(httpStatus.BAD_REQUEST, "User Does Not Exist!");
+        throw new AppError(httpStatus.NOT_FOUND, "User Does Not Exist!");
     };
 
     const isGoogleAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "google");
