@@ -42,7 +42,9 @@ passport.use(
 
                 return done(null, user);
             } catch (error) {
-                console.log(error);
+                if (envVars.NODE_ENV === "development") {
+                    console.log(error);
+                };
                 done(error);
             }
         }
@@ -91,7 +93,9 @@ passport.use(
 
                 return done(null, user);
             } catch (error) {
-                console.log("Google Strategy Error", error);
+                if (envVars.NODE_ENV === "development") {
+                    console.log("Google Strategy Error", error);
+                };
                 return done(error);
             }
         }
@@ -107,7 +111,9 @@ passport.deserializeUser(async (id: string, done: any) => {
         const user = await Users.findById(id);
         done(null, user);
     } catch (error) {
-        console.log(error);
+        if (envVars.NODE_ENV === "development") {
+            console.log(error);
+        };
         done(error);
     }
 });

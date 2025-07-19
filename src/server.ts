@@ -11,13 +11,19 @@ const startServer = async () => {
     try {
         await mongoose.connect(envVars.DB_URL);
 
-        console.log("Connected to Database!");
+        if (envVars.NODE_ENV === "development") {
+            console.log("Connected to Database!");
+        };
 
         server = app.listen(envVars.PORT, () => {
-            console.log("Server is running on port", envVars.PORT);
+            if (envVars.NODE_ENV === "development") {
+                console.log("Server is running on port", envVars.PORT);
+            };
         })
     } catch (error) {
-        console.log(error);
+        if (envVars.NODE_ENV === "development") {
+            console.log(error);
+        };
     }
 };
 
@@ -28,7 +34,9 @@ const startServer = async () => {
 
 // SIGTERM Error
 process.on("SIGTERM", () => {
-    console.log("SIGTERM signal received! Server shutting down...");
+    if (envVars.NODE_ENV === "development") {
+        console.log("SIGTERM signal received! Server shutting down...");
+    };
 
     if (server) {
         server.close(() => {
@@ -42,7 +50,9 @@ process.on("SIGTERM", () => {
 
 // Unhandled Rejection Error
 process.on("unhandledRejection", (error) => {
-    console.log("Unhandled Rejection detected! Server shutting down...", error);
+    if (envVars.NODE_ENV === "development") {
+        console.log("Unhandled Rejection detected! Server shutting down...", error);
+    };
 
     if (server) {
         server.close(() => {
@@ -56,7 +66,9 @@ process.on("unhandledRejection", (error) => {
 
 // Uncaught Exception Error
 process.on("uncaughtException", (error) => {
-    console.log("Uncaught Exception detected! Server shutting down...", error);
+    if (envVars.NODE_ENV === "development") {
+        console.log("Uncaught Exception detected! Server shutting down...", error);
+    };
 
     if (server) {
         server.close(() => {

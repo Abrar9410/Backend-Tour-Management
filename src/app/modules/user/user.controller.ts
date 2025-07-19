@@ -21,7 +21,9 @@ import { JwtPayload } from "jsonwebtoken";
 //             user
 //         })
 //     } catch (error: any) {
+//         if (envVars.NODE_ENV === "development") {  
 //         console.log(error);
+//         };
 //         next(error);
 //     }
 // };
