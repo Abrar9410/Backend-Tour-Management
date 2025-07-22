@@ -9,10 +9,14 @@ export const seedSuperAdmin = async () => {
         const isSuperAdminExists = await Users.findOne({email: envVars.SUPER_ADMIN_EMAIL});
 
         if (isSuperAdminExists) {
-            console.log("Super Admin exists");
+            if (envVars.NODE_ENV === "development") {
+                console.log("Super Admin exists");
+            };
             return;
         };
-        console.log("Creating Super Admin...");
+        if (envVars.NODE_ENV === "development") {
+            console.log("Creating Super Admin...");
+        };
 
         const hashedPassword = await bcryptjs.hash(envVars.SUPER_ADMIN_PASSWORD, Number(envVars.SALT));
         const authProvider: IAuthProvider = {
@@ -31,9 +35,13 @@ export const seedSuperAdmin = async () => {
 
         const superAdmin = await Users.create(payload);
 
-        console.log("Super Admin created successfully! \n");
-        console.log(superAdmin);
+        if (envVars.NODE_ENV === "development") {
+            console.log("Super Admin created successfully! \n");
+            console.log(superAdmin);
+        };
     } catch (error) {
-        console.log(error);
+        if (envVars.NODE_ENV === "development") {
+            console.log(error);
+        };
     }
 };
