@@ -59,7 +59,7 @@ const deleteDivisionService = async (id: string) => {
     return null;
 };
 
-export const DivisionService = {
+export const DivisionServices = {
     createDivisionService,
     getAllDivisionsService,
     getSingleDivisionService,
