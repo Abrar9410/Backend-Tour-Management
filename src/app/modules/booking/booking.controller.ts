@@ -5,8 +5,8 @@ import { sendResponse } from "../../utils/sendResponse";
 import { BookingServices } from "./booking.service";
 
 const createBooking = catchAsync(async (req: Request, res: Response) => {
-    const decodeToken = req.user as JwtPayload
-    const booking = await BookingServices.createBooking(req.body, decodeToken.userId);
+    const decodedToken = req.user as JwtPayload;
+    const booking = await BookingServices.createBookingService(req.body, decodedToken.userId);
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -17,7 +17,7 @@ const createBooking = catchAsync(async (req: Request, res: Response) => {
 
 const getUserBookings = catchAsync(
     async (req: Request, res: Response) => {
-        const bookings = await BookingServices.getUserBookings();
+        const bookings = await BookingServices.getUserBookingsService();
         sendResponse(res, {
             statusCode: 200,
             success: true,
@@ -26,9 +26,11 @@ const getUserBookings = catchAsync(
         });
     }
 );
+
 const getSingleBooking = catchAsync(
     async (req: Request, res: Response) => {
-        const booking = await BookingServices.getBookingById();
+        const bookingId = req.params.bookingId;
+        const booking = await BookingServices.getBookingByIdService(bookingId);
         sendResponse(res, {
             statusCode: 200,
             success: true,
@@ -41,7 +43,7 @@ const getSingleBooking = catchAsync(
 const getAllBookings = catchAsync(
     async (req: Request, res: Response) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const bookings = await BookingServices.getAllBookings();
+        const bookings = await BookingServices.getAllBookingsService();
         sendResponse(res, {
             statusCode: 200,
             success: true,
@@ -55,7 +57,7 @@ const getAllBookings = catchAsync(
 const updateBookingStatus = catchAsync(
     async (req: Request, res: Response) => {
 
-        const updated = await BookingServices.updateBookingStatus(
+        const updated = await BookingServices.updateBookingStatusService(
         );
         sendResponse(res, {
             statusCode: 200,
