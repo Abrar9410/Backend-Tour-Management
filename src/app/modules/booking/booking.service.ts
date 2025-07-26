@@ -20,11 +20,11 @@ const getTransactionId = () => {
  * Relica DB -> [ Create Booking -> Create Payment ->  Update Booking -> Error] -> Real DB
  */
 
-const createBooking = async (payload: Partial<IBooking>, userId: string) => {
-    const transactionId = getTransactionId()
+const createBookingService = async (payload: Partial<IBooking>, userId: string) => {
+    const transactionId = getTransactionId();
 
     const session = await Bookings.startSession();
-    session.startTransaction()
+    session.startTransaction();
 
     try {
         const user = await Users.findById(userId);
@@ -33,27 +33,27 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
             throw new AppError(httpStatus.BAD_REQUEST, "Please Update Your Profile to Book a Tour.")
         }
 
-        const tour = await Tours.findById(payload.tour).select("costFrom")
+        const tour = await Tours.findById(payload.tour).select("costFrom");
 
         if (!tour?.costFrom) {
-            throw new AppError(httpStatus.BAD_REQUEST, "No Tour Cost Found!")
-        }
+            throw new AppError(httpStatus.BAD_REQUEST, "No Tour Cost Found!");
+        };
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const amount = Number(tour.costFrom) * Number(payload.guestCount!)
+        const amount = Number(tour.costFrom) * Number(payload.guestCount!);
 
         const booking = await Bookings.create([{
             user: userId,
             status: BOOKING_STATUS.PENDING,
             ...payload
-        }], { session })
+        }], { session });
 
         const payment = await Payments.create([{
             booking: booking[0]._id,
             status: PAYMENT_STATUS.UNPAID,
             transactionId: transactionId,
             amount: amount
-        }], { session })
+        }], { session });
 
         const updatedBooking = await Bookings
             .findByIdAndUpdate(
@@ -65,10 +65,10 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
             .populate("tour", "title costFrom")
             .populate("payment");
 
-        const userAddress = (updatedBooking?.user as any).address
-        const userEmail = (updatedBooking?.user as any).email
-        const userPhoneNumber = (updatedBooking?.user as any).phone
-        const userName = (updatedBooking?.user as any).name
+        const userAddress = (updatedBooking?.user as any).address;
+        const userEmail = (updatedBooking?.user as any).email;
+        const userPhoneNumber = (updatedBooking?.user as any).phone;
+        const userName = (updatedBooking?.user as any).name;
 
         const sslPayload: ISSLCommerz = {
             address: userAddress,
@@ -77,21 +77,22 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
             name: userName,
             amount: amount,
             transactionId: transactionId
-        }
+        };
 
-        const sslPayment = await SSLService.sslPaymentInit(sslPayload)
+        const sslPayment = await SSLService.sslPaymentInit(sslPayload);
 
         await session.commitTransaction(); //transaction
-        session.endSession()
+        session.endSession();
+
         return {
             paymentUrl: sslPayment.GatewayPageURL,
             booking: updatedBooking
-        }
+        };
     } catch (error) {
         await session.abortTransaction(); // rollback
         session.endSession()
         // throw new AppError(httpStatus.BAD_REQUEST, error) ❌❌
-        throw error
+        throw error;
     }
 };
 
@@ -99,31 +100,31 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
 
 // Frontend(localhost:5173) - User - Tour - Booking (Pending) - Payment(Unpaid) -> SSLCommerz Page -> Payment Fail / Cancel -> Backend(localhost:5000) -> Update Payment(FAIL / CANCEL) & Booking(FAIL / CANCEL) -> redirect to frontend -> Frontend(localhost:5173/payment/cancel or localhost:5173/payment/fail)
 
-const getUserBookings = async () => {
+const getUserBookingsService = async () => {
 
     return {}
 };
 
-const getBookingById = async () => {
+const getBookingByIdService = async (id: string) => {
+    const booking = await Bookings.findById(id);
+
+    return booking;
+};
+
+const updateBookingStatusService = async () => {
+
     return {}
 };
 
-const updateBookingStatus = async (
-
-) => {
-
-    return {}
-};
-
-const getAllBookings = async () => {
+const getAllBookingsService = async () => {
 
     return {}
 };
 
 export const BookingServices = {
-    createBooking,
-    getUserBookings,
-    getBookingById,
-    updateBookingStatus,
-    getAllBookings,
+    createBookingService,
+    getUserBookingsService,
+    getBookingByIdService,
+    updateBookingStatusService,
+    getAllBookingsService,
 };
