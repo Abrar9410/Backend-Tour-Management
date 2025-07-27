@@ -2,6 +2,9 @@ import { Response } from "express";
 
 
 interface IMeta {
+    page: number;
+    limit: number;
+    totalPage: number;
     total: number
 };
 
@@ -21,5 +24,5 @@ export const sendResponse = <T>(res: Response, data: IResponse<T>) => {
         message: data.message,
         meta: data.meta,
         data: data.data
-    })
+    });
 };

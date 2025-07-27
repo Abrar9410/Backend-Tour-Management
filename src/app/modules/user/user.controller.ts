@@ -54,7 +54,9 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 });
 
 const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await UserServices.getAllUsersService();
+    const query = req.query;
+    
+    const result = await UserServices.getAllUsersService(query as Record<string, string>);
 
     sendResponse(res, {
         success: true,
@@ -65,8 +67,34 @@ const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFun
     });
 });
 
+const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user as JwtPayload
+    const result = await UserServices.getMeService(decodedToken.userId);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "Your profile Retrieved Successfully!",
+        data: result.data
+    });
+});
+
+const getSingleUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const result = await UserServices.getSingleUserService(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "User Retrieved Successfully",
+        data: result.data
+    })
+});
+
 export const UserControllers = {
     createUser,
     updateUser,
-    getAllUsers
+    getAllUsers,
+    getMe,
+    getSingleUser
 };
