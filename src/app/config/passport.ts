@@ -5,7 +5,7 @@ import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-go
 import bcryptjs from "bcryptjs";
 import { envVars } from "./env";
 import { Users } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 
 
 passport.use(
@@ -21,6 +21,18 @@ passport.use(
                 if (!user) {
                     return done(null, false, {message: "User Does Not Exist!"});
                     // return done("User Does Not Exist!")  //Alternative
+                };
+
+                if (!user.isVerified) {
+                    return done(null, false, { message: "User is Not Verified!" });
+                };
+
+                if (user.isActive === IsActive.BLOCKED || user.isActive === IsActive.INACTIVE) {
+                    return done(null, false, { message: `User is ${user.isActive}!` });
+                };
+
+                if (user.isDeleted) {
+                    return done(null, false, { message: "User is Deleted!" });
                 };
 
                 const isGoogleAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "google");
@@ -83,6 +95,18 @@ passport.use(
                         ]
                     });
                 } else {
+                    if (!user.isVerified) {
+                        return done(null, false, { message: "User is Not Verified!" });
+                    };
+
+                    if (user.isActive === IsActive.BLOCKED || user.isActive === IsActive.INACTIVE) {
+                        return done(null, false, { message: `User is ${user.isActive}!` });
+                    };
+
+                    if (user.isDeleted) {
+                        return done(null, false, { message: "User is Deleted!" });
+                    };
+                    
                     const isLocalAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "credentials");
                     const isGoogleAuthenticated = user.auths.some(providerObjects => providerObjects.provider === "google");
                     if (isLocalAuthenticated && !isGoogleAuthenticated) {

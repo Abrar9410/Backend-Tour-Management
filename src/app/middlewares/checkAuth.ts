@@ -26,6 +26,10 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
             throw new AppError(httpStatus.BAD_REQUEST, "User Does Not Exist!");
         };
 
+        if (!user.isVerified) {
+            throw new AppError(httpStatus.BAD_REQUEST, "User is Not Verified!");
+        };
+
         if (user.isActive === IsActive.BLOCKED || user.isActive === IsActive.INACTIVE) {
             throw new AppError(httpStatus.BAD_REQUEST, `User is ${user.isActive}!`);
         };

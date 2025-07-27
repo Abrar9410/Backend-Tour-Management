@@ -9,10 +9,8 @@ import { Tours } from "../tour/tour.model";
 import { Users } from "../user/user.model";
 import { BOOKING_STATUS, IBooking } from "./booking.interface";
 import { Bookings } from "./booking.model";
+import { getTransactionId } from "../../utils/getTransactionId";
 
-const getTransactionId = () => {
-    return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`
-}
 
 /**
  * Duplicate DB Collections / replica

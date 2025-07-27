@@ -1,11 +1,16 @@
 import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/sendResponse';
-import { TourService } from './tour.service';
+import { TourServices } from './tour.service';
+import { ITour } from './tour.interface';
 
 const createTour = catchAsync(async (req: Request, res: Response) => {
+    const payload: ITour = {
+        ...req.body,
+        images: (req.files as Express.Multer.File[]).map(file => file.path)
+    };
 
-    const result = await TourService.createTourService(req.body);
+    const result = await TourServices.createTourService(payload);
     
     sendResponse(res, {
         statusCode: 201,
@@ -18,7 +23,7 @@ const createTour = catchAsync(async (req: Request, res: Response) => {
 const getAllTours = catchAsync(async (req: Request, res: Response) => {
 
     const query = req.query
-    const result = await TourService.getAllToursService(query as Record<string, string>);
+    const result = await TourServices.getAllToursService(query as Record<string, string>);
     
     sendResponse(res, {
         statusCode: 200,
@@ -30,8 +35,12 @@ const getAllTours = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateTour = catchAsync(async (req: Request, res: Response) => {
+    const payload: ITour = {
+        ...req.body,
+        images: (req.files as Express.Multer.File[]).map(file => file.path)
+    }
 
-    const result = await TourService.updateTourService(req.params.id, req.body);
+    const result = await TourServices.updateTourService(req.params.id, payload);
     
     sendResponse(res, {
         statusCode: 200,
@@ -44,7 +53,7 @@ const updateTour = catchAsync(async (req: Request, res: Response) => {
 const deleteTour = catchAsync(async (req: Request, res: Response) => {
     
     const { id } = req.params;
-    const result = await TourService.deleteTourService(id);
+    const result = await TourServices.deleteTourService(id);
     
     sendResponse(res, {
         statusCode: 200,
@@ -53,9 +62,10 @@ const deleteTour = catchAsync(async (req: Request, res: Response) => {
         data: result,
     });
 });
+
 const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
     
-    const result = await TourService.getAllTourTypesService();
+    const result = await TourServices.getAllTourTypesService();
     
     sendResponse(res, {
         statusCode: 200,
@@ -69,7 +79,7 @@ const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
 const createTourType = catchAsync(async (req: Request, res: Response) => {
     
     const { name } = req.body;
-    const result = await TourService.createTourTypeService(name);
+    const result = await TourServices.createTourTypeService(name);
     
     sendResponse(res, {
         statusCode: 201,
@@ -83,7 +93,7 @@ const updateTourType = catchAsync(async (req: Request, res: Response) => {
     
     const { id } = req.params;
     const { name } = req.body;
-    const result = await TourService.updateTourTypeService(id, name);
+    const result = await TourServices.updateTourTypeService(id, name);
     
     sendResponse(res, {
         statusCode: 200,
@@ -92,10 +102,11 @@ const updateTourType = catchAsync(async (req: Request, res: Response) => {
         data: result,
     });
 });
+
 const deleteTourType = catchAsync(async (req: Request, res: Response) => {
     
     const { id } = req.params;
-    const result = await TourService.deleteTourTypeService(id);
+    const result = await TourServices.deleteTourTypeService(id);
     
     sendResponse(res, {
         statusCode: 200,
