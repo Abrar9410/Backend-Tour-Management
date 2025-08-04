@@ -13,7 +13,11 @@ import { envVars } from "./app/config/env";
 
 const app = express();
 
-app.use(cors());
+app.set("trust proxy", 1);
+app.use(cors({
+    origin: ['http://localhost:5173', envVars.FRONTEND_URL],
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());

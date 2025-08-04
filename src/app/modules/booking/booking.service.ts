@@ -4,7 +4,7 @@ import AppError from "../../errorHelpers/AppError";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { Payments } from "../payment/payment.model";
 import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
-import { SSLService } from "../sslCommerz/sslCommerz.service";
+import { SSLServices } from "../sslCommerz/sslCommerz.service";
 import { Tours } from "../tour/tour.model";
 import { Users } from "../user/user.model";
 import { BOOKING_STATUS, IBooking } from "./booking.interface";
@@ -77,7 +77,7 @@ const createBookingService = async (payload: Partial<IBooking>, userId: string) 
             transactionId: transactionId
         };
 
-        const sslPayment = await SSLService.sslPaymentInit(sslPayload);
+        const sslPayment = await SSLServices.sslPaymentInit(sslPayload);
 
         await session.commitTransaction(); //transaction
         session.endSession();

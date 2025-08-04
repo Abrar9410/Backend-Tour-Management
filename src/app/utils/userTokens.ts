@@ -45,4 +45,4 @@ export const createNewTokenWithRefreshToken = async (refreshToken: string) => {
     const newToken = generateToken(jwtPayload, envVars.JWT_SECRET, envVars.JWT_EXPIRESIN);
 
     return newToken;
-}
+};
