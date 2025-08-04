@@ -22,6 +22,7 @@ const createDivision = catchAsync(async (req: Request, res: Response) => {
 
 const getAllDivisions = catchAsync(async (req: Request, res: Response) => {
     const result = await DivisionServices.getAllDivisionsService();
+
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -33,6 +34,7 @@ const getAllDivisions = catchAsync(async (req: Request, res: Response) => {
 const getSingleDivision = catchAsync(async (req: Request, res: Response) => {
     const slug = req.params.slug
     const result = await DivisionServices.getSingleDivisionService(slug);
+
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -60,6 +62,7 @@ const updateDivision = catchAsync(async (req: Request, res: Response) => {
 
 const deleteDivision = catchAsync(async (req: Request, res: Response) => {
     const result = await DivisionServices.deleteDivisionService(req.params.id);
+    
     sendResponse(res, {
         statusCode: 200,
         success: true,

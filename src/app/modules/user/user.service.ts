@@ -41,28 +41,29 @@ const updateUserService = async (userId: string, payload: Partial<IUser>, decode
      * Only SUPER_ADMIN can promote someone to SUPER_ADMIN
      */
 
-    const user = await Users.findById(userId);
-    if (!user) {
-        throw new AppError(httpStatus.NOT_FOUND, "User Not Found!");
-    };
-
     if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
         if (userId !== decodedToken.userId) {
             throw new AppError(httpStatus.FORBIDDEN, "You are Unauthorized to Update another user's Profile!");
         };
     };
 
+    const user = await Users.findById(userId);
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User Not Found!");
+    };
+
+
     if (user.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
-        throw new AppError(httpStatus.FORBIDDEN, "You are Not Authorized to Update a SUPER_ADMIN Profile!")
-    }
+        throw new AppError(httpStatus.FORBIDDEN, "You are Not Authorized to Update this Profile!");
+    };
 
     if (payload.role) {
         if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
-            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized to update role!");
+            throw new AppError(httpStatus.FORBIDDEN, "You are Not authorized to update role!");
         };
 
         if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
-            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized to promote to SUPER_ADMIN!");
+            throw new AppError(httpStatus.FORBIDDEN, "You are Not authorized to promote anyone to SUPER_ADMIN!");
         };
     };
 
